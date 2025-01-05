@@ -1,16 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/minicomp/card"
 import { Button } from "@/components/minicomp/button"
 import { AnimatedNumber } from './minicomp/animated-number'
-import { TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
+import { TrendingUp, TrendingDown, DollarSign, Calendar } from 'lucide-react'
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 import axios from 'axios'
-import { Autocomplete, TextField } from '@mui/material'
-import { VictoryChart, VictoryCandlestick, VictoryTheme, VictoryAxis, VictoryTooltip, VictoryZoomContainer } from 'victory'
+import { StockSearch } from './StockSearch'
 
-const ALPHA_VANTAGE_API_KEY = process.env.NEXT_PUBLIC_ALPHA_VANTAGE_API_KEY
+const POLYGON_API_KEY = process.env.NEXT_PUBLIC_POLYGON_API_KEY
 
 interface StockData {
   symbol: string
@@ -22,58 +22,41 @@ interface StockData {
   open: number
   previousClose: number
   volume: number
-  historicalData: { date: string; open: number; high: number; low: number; close: number }[]
+  historicalData: { date: string; price: number }[]
 }
-
-const predefinedTimeRanges = ['1D', '1W', '1M', '3M', '6M', '1Y', 'ALL']
 
 export function FinanceWidget() {
   const [stockData, setStockData] = useState<StockData | null>(null)
   const [timeRange, setTimeRange] = useState('1M')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [searchValue, setSearchValue] = useState('')
-  const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>([])
 
   const fetchStockData = async (symbol: string) => {
     setLoading(true)
     setError('')
+
     try {
-      const response = await axios.get(
-        `https://www.alphavantage.co/query`,
-        {
-          params: {
-            function: 'TIME_SERIES_INTRADAY',
-            symbol,
-            interval: '5min',
-            outputsize: 'compact', // Use 'full' for extended history
-            apikey: ALPHA_VANTAGE_API_KEY,
-          },
-        }
-      )
+      const [quoteResponse, aggregatesResponse] = await Promise.all([
+        axios.get(`https://api.polygon.io/v2/aggs/ticker/${symbol}/prev?adjusted=true&apiKey=${POLYGON_API_KEY}`),
+        axios.get(`https://api.polygon.io/v2/aggs/ticker/${symbol}/range/1/day/2022-01-01/${new Date().toISOString().split('T')[0]}?adjusted=true&sort=asc&limit=50000&apiKey=${POLYGON_API_KEY}`)
+      ])
 
-      const data = response.data['Time Series (5min)']
-      if (!data) throw new Error('No data returned from API')
-
-      const historicalData = Object.entries(data).map(([date, values]: [string, any]) => ({
-        date: new Date(date),
-        open: parseFloat(values['1. open']),
-        high: parseFloat(values['2. high']),
-        low: parseFloat(values['3. low']),
-        close: parseFloat(values['4. close']),
+      const quote = quoteResponse.data.results?.[0] ?? {}
+      const historicalData = (aggregatesResponse.data.results ?? []).map((item: any) => ({
+        date: new Date(item.t).toISOString().split('T')[0],
+        price: item.c,
       }))
 
-      const latestEntry = historicalData[0]
       setStockData({
-        symbol,
-        price: latestEntry.close,
-        change: latestEntry.close - latestEntry.open,
-        changePercent: ((latestEntry.close - latestEntry.open) / latestEntry.open) * 100,
-        high: latestEntry.high,
-        low: latestEntry.low,
-        open: latestEntry.open,
-        previousClose: historicalData[1]?.close || latestEntry.open,
-        volume: 0, // Volume not available in this endpoint
+        symbol: symbol,
+        price: quote.c ?? 0,
+        change: (quote.c ?? 0) - (quote.o ?? 0),
+        changePercent: ((quote.c ?? 0) - (quote.o ?? 0)) / (quote.o ?? 1) * 100,
+        high: quote.h ?? 0,
+        low: quote.l ?? 0,
+        open: quote.o ?? 0,
+        previousClose: quote.pc ?? 0,
+        volume: quote.v ?? 0,
         historicalData,
       })
     } catch (err) {
@@ -84,20 +67,12 @@ export function FinanceWidget() {
     }
   }
 
-  const fetchAutocompleteSuggestions = async (query: string) => {
-    const predefinedStocks = ['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'IBM', 'TSLA']
-    setAutocompleteOptions(predefinedStocks.filter(stock => stock.toLowerCase().includes(query.toLowerCase())))
-  }
-
   const getTimeRangeData = () => {
     if (!stockData) return []
     const now = new Date()
     let startDate = new Date()
 
     switch (timeRange) {
-      case '1D':
-        startDate.setDate(now.getDate() - 1)
-        break
       case '1W':
         startDate.setDate(now.getDate() - 7)
         break
@@ -121,26 +96,17 @@ export function FinanceWidget() {
   }
 
   return (
-    <Card className="bg-cyan-900 text-blue-50">
+    <Card className="bg-card text-card-foreground">
       <CardHeader>
         <CardTitle className="flex items-center text-3xl font-bold">
-          <DollarSign className="mr-2 text-cyan-400" />
+          <DollarSign className="mr-2 text-primary" />
           Stock Tracker
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Autocomplete
-          freeSolo
-          options={autocompleteOptions}
-          onInputChange={(event, value) => {
-            setSearchValue(value)
-            fetchAutocompleteSuggestions(value)
-          }}
-          onChange={(event, value) => value && fetchStockData(value)}
-          renderInput={(params) => <TextField {...params} label="Search Stock" />}
-        />
+        <StockSearch onSubmit={fetchStockData} isLoading={loading} />
 
-        {error && <p className="text-red-500 mt-4">{error}</p>}
+        {error && <p className="text-destructive mt-4">{error}</p>}
 
         {stockData && !loading && (
           <motion.div
@@ -149,9 +115,9 @@ export function FinanceWidget() {
             transition={{ duration: 0.5 }}
             className="mt-6 space-y-4"
           >
-            <h3 className="text-3xl font-semibold text-cyan-400">{stockData.symbol}</h3>
-            <div className="flex items-center text-2xl text-blue-50">
-              <DollarSign className="mr-2 text-cyan-400" />
+            <h3 className="text-3xl font-semibold">{stockData.symbol}</h3>
+            <div className="flex items-center text-2xl">
+              <DollarSign className="mr-2 text-primary" />
               <AnimatedNumber value={stockData?.price ?? 0} />
             </div>
             <div className="flex items-center text-xl">
@@ -163,41 +129,59 @@ export function FinanceWidget() {
               <AnimatedNumber value={stockData?.change ?? 0} />
               (<AnimatedNumber value={stockData?.changePercent ?? 0} />%)
             </div>
-            <div className="flex space-x-2 text-cyan-300">
-              {predefinedTimeRanges.map((range) => (
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>Open: ${stockData?.open?.toFixed(2) ?? 'N/A'}</div>
+              <div>Previous Close: ${stockData?.previousClose?.toFixed(2) ?? 'N/A'}</div>
+              <div>High: ${stockData?.high?.toFixed(2) ?? 'N/A'}</div>
+              <div>Low: ${stockData?.low?.toFixed(2) ?? 'N/A'}</div>
+              <div>Volume: {stockData?.volume?.toLocaleString() ?? 'N/A'}</div>
+            </div>
+            <div className="flex space-x-2">
+              {['1W', '1M', '3M', '6M', '1Y', 'ALL'].map((range) => (
                 <Button
                   key={range}
                   onClick={() => setTimeRange(range)}
                   variant={timeRange === range ? 'default' : 'outline'}
                   size="sm"
-                  className="text-cyan-300 hover:text-cyan-100"
                 >
                   {range}
                 </Button>
               ))}
             </div>
-            <div className="mt-7 w-full h-70">
-              <VictoryChart
-                theme={VictoryTheme.material}
-                scale={{ x: 'time', y: 'linear' }}
-                containerComponent={<VictoryZoomContainer zoomDimension="x" />}
-              >
-                <VictoryAxis tickFormat={(t) => new Date(t).toLocaleDateString()} style={{ tickLabels: { fill: 'white' } }} />
-                <VictoryAxis dependentAxis style={{ tickLabels: { fill: 'white' } }} />
-                <VictoryCandlestick
-                  data={getTimeRangeData()}
-                  x="date"
-                  open="open"
-                  close="close"
-                  high="high"
-                  low="low"
-                  labels={({ datum }) => `Close: ${datum.close}`}
-                  labelComponent={<VictoryTooltip />}
-                  style={{
-                    data: { stroke: 'cyan', fill: 'cyan' },
-                  }}
-                />
-              </VictoryChart>
+            <div className="mt-6 h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={getTimeRangeData()}>
+                  <XAxis
+                    dataKey="date"
+                    stroke="currentColor"
+                    tickFormatter={(date) => new Date(date).toLocaleDateString()}
+                  />
+                  <YAxis
+                    stroke="currentColor"
+                    domain={['dataMin', 'dataMax']}
+                    tickFormatter={(value) => `$${value.toFixed(2)}`}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--popover))',
+                      borderColor: 'hsl(var(--border))',
+                      color: 'hsl(var(--popover-foreground))',
+                    }}
+                    labelStyle={{ color: 'hsl(var(--popover-foreground))' }}
+                    formatter={(value: number) => [`$${value.toFixed(2)}`, 'Price']}
+                    labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                  />
+                  <ReferenceLine y={stockData?.previousClose ?? 0} stroke="hsl(var(--muted-foreground))" strokeDasharray="3 3" />
+                  <Line
+                    type="monotone"
+                    dataKey="price"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 8 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           </motion.div>
         )}
