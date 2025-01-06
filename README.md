@@ -2,47 +2,84 @@
 
 ## Project Overview
 
-The **Analytics MultiApp** is an interactive, feature-rich web application that consolidates multiple data sources into a single platform. It features widgets for real-time updates on weather, stock market data, news, movies, and more. The app offers a user-friendly experience with customizable layouts, smooth animations, and responsive design.
+The **Analytics MultiApp** is a feature-packed web application that provides insights and data from multiple sources in one centralized platform. With real-time updates, customizable widgets, and an intuitive UI, users can access information like weather, news, stock market data, and more in a single dashboard.
 
 ## Features
 
-- **Weather Updates**: Real-time weather forecasts with multi-day predictions.
-- **News Widget**: Fetch and display categorized news articles (e.g., General, Technology, Business) using NewsAPI.
-- **Stock Market Analysis**: Monitor real-time stock prices and trends from financial APIs.
-- **Movie Information**: View trending movies, ratings, and trailers using the TMDB API.
-- **GitHub Insights**: Showcase repository stats, commits, and contributors.
-- **Custom Widgets**: Drag-and-drop widgets for a personalized dashboard.
-- **Advanced Animations**: Interactive UI elements built with **Framer Motion**.
-- **Theme Modes**: Light and Dark modes for optimal user experience.
-- **Real-Time Data**: Automatically update news, weather, and stock data with WebSockets.
-- **Responsive Design**: Optimized for all devices—desktop, tablet, and mobile.
+- **Weather Widget**: Real-time weather updates and forecasts.
+- **News Widget**: Latest news categorized by topics.
+- **Finance Widget**: Real-time stock market data and trends.
+- **Movie Widget**: Trending movies with ratings and trailers from TMDB API.
+- **GitHub Widget**: Repository statistics, commit history, and contributor details.
+- **Customizable Dashboard**: Drag-and-drop widgets for a personalized experience.
+- **Dark Mode**: Toggle between light and dark themes.
+- **Responsive Design**: Fully responsive for mobile, tablet, and desktop.
+- **Real-Time Data**: Widgets auto-update with fresh data.
 
----
+## Directory Structure
 
-## Technologies Used
-
-- **Frontend Framework**: Next.js  
-- **Language**: TypeScript  
-- **Styling**: Tailwind CSS  
-- **State Management**: Redux Toolkit  
-- **Data Visualization**: Recharts & D3.js  
-- **Animations**: Framer Motion, CSS Transitions  
-- **Backend APIs**: OpenWeatherMap, NewsAPI, Alpha Vantage, TMDB, GitHub API  
-- **Real-Time Updates**: WebSockets for stock prices and news.  
-
----
-
-## Project Structure
-
-```bash
-├── app/                  # Main application structure (pages, layouts)
-├── components/           # Modular mini components (widgets, cards, buttons)
-├── styles/               # Custom Tailwind CSS configurations
-├── utils/                # Helper functions and utilities
-├── public/               # Public assets (icons, images)
+```plaintext
+└── Ayushpal11-Analytics_MultiApp/
+    ├── README.md
+    ├── components.json
+    ├── eslint.config.mjs
+    ├── mock-weatherdata.json
+    ├── next.config.ts
+    ├── package.json
+    ├── postcss.config.mjs
+    ├── tailwind.config.ts
+    ├── tsconfig.json
+    ├── app/
+    │   ├── globals.css
+    │   ├── layout.tsx
+    │   ├── providers.tsx
+    │   └── (home)/
+    │       └── page.tsx
+    ├── components/
+    │   ├── AnimatedBackground.tsx
+    │   ├── ArticleModal.tsx
+    │   ├── AutoComplete.tsx
+    │   ├── Dashboard.tsx
+    │   ├── FinanceWidget.tsx
+    │   ├── GithubWidget.tsx
+    │   ├── MovieWidget.tsx
+    │   ├── NewsWidget.tsx
+    │   ├── PersonalInfo.tsx
+    │   ├── StockSearch.tsx
+    │   ├── WeatherWidget.tsx
+    │   ├── WidgetSelector.tsx
+    │   └── minicomp/
+    │       ├── animated-number.tsx
+    │       ├── avatar.tsx
+    │       ├── badge.tsx
+    │       ├── button.tsx
+    │       ├── card.tsx
+    │       ├── dialog.tsx
+    │       ├── dropdown-menu.tsx
+    │       ├── input.tsx
+    │       ├── neon-border.tsx
+    │       ├── progress.tsx
+    │       ├── scroll-area.tsx
+    │       ├── select.tsx
+    │       ├── separator.tsx
+    │       ├── switch.tsx
+    │       ├── tabs.tsx
+    │       └── tooltip.tsx
+    ├── data/
+    │   └── popularStocks.ts
+    ├── lib/
+    │   ├── utils.ts
+    │   └── redux/
+    │       ├── financeSlice.ts
+    │       ├── newsSlice.ts
+    │       ├── store.ts
+    │       └── weatherSlice.ts
+    ├── public/
+    ├── styles/
+    │   └── globals.css
+    └── utils/
+        └── formatDate.ts
 ```
-
----
 
 ## Installation Instructions
 
@@ -61,82 +98,57 @@ The **Analytics MultiApp** is an interactive, feature-rich web application that 
    npm install
    ```
 
----
-
 ## Running the Project
 
-- **Development Mode**:
+- **Development Server**:
   ```bash
   npm run dev
   ```
   Access the application at `http://localhost:3000`.
 
-- **Production Mode**:
+- **Production Build**:
   ```bash
   npm run build
   npm start
   ```
 
----
-
 ## Environment Variables
 
-Create a `.env.local` file in the root directory and add the following keys:
-
+Create a `.env.local` file in the root directory and add the following environment variables:
 ```env
-# Weather API Key
 NEXT_PUBLIC_WEATHER_API_KEY=your_openweathermap_api_key
-
-# News API Key
-NEXT_PUBLIC_NEWSAPI_API_KEY=your_newsapi_key
-
-# Stock Market API Key
+NEXT_PUBLIC_NEWS_API_KEY=your_newsapi_key
 NEXT_PUBLIC_FINANCE_API_KEY=your_alpha_vantage_api_key
-
-# TMDB API Key
 NEXT_PUBLIC_TMDB_API_KEY=your_tmdb_api_key
 ```
 
-Ensure these APIs are active and their respective keys are valid.
+## Technologies Used
 
----
-
-## Deployment
-
-The project is deployed on **Vercel** for seamless production hosting.  
-Visit the live demo here: [Live Demo Link](https://analytics-multi-app.vercel.app/).
-
----
+- **Framework**: Next.js
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **State Management**: Redux Toolkit
+- **Data Visualization**: Recharts
+- **Animations**: Framer Motion, CSS Transitions
+- **APIs**: OpenWeatherMap, NewsAPI, Alpha Vantage, TMDB, GitHub API
+- **WebSocket**: Real-time data updates
 
 ## Additional Features
 
-- **Widget Customization**: Drag-and-drop widgets for custom layouts.
 - **Localization**: Multi-language support using **react-i18next**.
-- **Real-Time Data**: Automatic data refresh using WebSocket connections.
-- **Smooth Animations**: Enhance user engagement with interactive animations.
-- **Error Handling**: Graceful handling of API failures with informative messages.
+- **Theme Customization**: Users can toggle between light and dark modes.
+- **Real-Time Updates**: WebSocket integration for data-intensive widgets.
 
----
+## Deployment
 
-## Contributing
+The application is deployed on [Vercel](https://vercel.com). You can access the live demo here: [Live Demo Link](https://analytics-multi-app.vercel.app/).
 
-We welcome contributions to improve the Analytics MultiApp!  
-Please follow these steps:
+## Future Enhancements
 
-1. Fork the repository.
-2. Create a new branch:
-   ```bash
-   git checkout -b feature/your-feature
-   ```
-3. Commit your changes and push them:
-   ```bash
-   git commit -m "Add your feature description"
-   git push origin feature/your-feature
-   ```
-4. Submit a Pull Request for review.
-
----
+- **Additional Widgets**: Add support for new widgets like sports scores, cryptocurrency trends, and more.
+- **User Authentication**: Enable user-specific customizations with authentication.
+- **Performance Improvements**: Optimize API calls and component rendering.
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the MIT License. See the LICENSE file for more details.
