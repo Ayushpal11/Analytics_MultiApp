@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-The **Analytics MultiApp** is a feature-packed web application that provides insights and data from multiple sources in one centralized platform. With real-time updates, customizable widgets, and an intuitive UI, users can access information like weather, news, stock market data, and more in a single dashboard.
+The **InsightHub Dashboard** is a feature-packed web application that provides insights and data from multiple sources in one centralized platform. With real-time updates, customizable widgets, and an intuitive UI, users can access information like weather, news, stock market data, and more in a single dashboard.
 
 ## Features
 
