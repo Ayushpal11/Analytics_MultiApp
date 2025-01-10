@@ -8,7 +8,7 @@ const fontSans = FontSans({
 })
 
 export const metadata = {
-  title: 'Web-Analytics',
+  title: 'InsightHub-Dashboard',
   description: 'Developed by Ayush Pal',
 }
 
