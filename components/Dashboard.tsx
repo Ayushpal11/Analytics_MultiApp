@@ -70,7 +70,7 @@ export function Dashboard() {
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.5 }}
             >
-              Web-Analytics
+              InsightHub Dashboard
             </motion.h1>
             <motion.div
               initial={{ x: 50, opacity: 0 }}
