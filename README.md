@@ -1,4 +1,4 @@
-# Analytics MultiApp
+# InsightHub Dashboard
 
 ## Project Overview
 
